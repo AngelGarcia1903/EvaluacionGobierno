@@ -15,18 +15,18 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Cambiamos email por username para que coincida con tu SQL
         $request->validate([
-            'email' => 'required|email',
+            'username' => 'required',
             'password' => 'required'
         ]);
 
-        // Buscamos al usuario por email y comparamos el hash MD5
-        $user = User::where('email', $request->email)
-            ->where('password', md5($request->password)) // Requisito del examen
+        // Buscamos por la columna 'username' que es la que tienes en Workbench
+        $user = User::where('username', $request->username)
+            ->where('password', md5($request->password))
             ->first();
 
         if ($user) {
-            // Manejo de sesiones manual para cumplir con el punto
             Session::put('user_id', $user->id);
             Session::put('user_name', $user->name);
             return redirect()->route('dashboard');

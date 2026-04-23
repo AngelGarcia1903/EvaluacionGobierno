@@ -10,11 +10,12 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password'];
+    // AÑADE ESTA LÍNEA para que Laravel no busque 'updated_at'
+    public $timestamps = false;
 
+    protected $fillable = ['username', 'password', 'name'];
     protected $hidden = ['password', 'remember_token'];
 
-    // ELIMINAMOS 'password' => 'hashed' de aquí para que no interfiera con MD5
     protected function casts(): array
     {
         return [

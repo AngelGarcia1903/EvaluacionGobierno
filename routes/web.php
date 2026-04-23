@@ -5,6 +5,7 @@ use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\DuenoController;
 use App\Http\Controllers\ReporteController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,10 +30,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['check.session'])->group(function () {
 
     // Panel Principal
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // --- PARTE 3: Catálogos (CRUD) ---
     // Vehículos
     Route::resource('vehiculos', VehiculoController::class);

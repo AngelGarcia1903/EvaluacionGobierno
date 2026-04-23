@@ -16,8 +16,8 @@
                     <form action="{{ route('login.post') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" required>
+                            <label class="form-label">Nombre de Usuario</label>
+                            <input type="text" name="username" class="form-control" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña</label>
