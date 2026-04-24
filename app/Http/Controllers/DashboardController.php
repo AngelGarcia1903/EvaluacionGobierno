@@ -5,35 +5,44 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Dueno;
 use App\Models\Vehiculo;
+use App\Models\ReporteRobo; // Importación explícita para evitar el \App\Models\
 
 class DashboardController extends Controller
 {
-    // En DashboardController.php
-
+    /**
+     * Muestra el panel principal con estadísticas en tiempo real.
+     * Cumple con la Parte 3: Generar clases y métodos correspondientes.
+     */
     public function index()
     {
+        // Obtención de conteos básicos mediante Eloquent (POO)
         $totalDuenos = Dueno::count();
         $totalVehiculos = Vehiculo::count();
-        $totalReportes = \App\Models\ReporteRobo::count();
+        $totalReportes = ReporteRobo::count();
 
-        // Lógica Realista: Porcentaje de vehículos con reporte de robo
-        // Esto es un dato real y valioso para un dashboard de gobierno
+        // Lógica de Negocio: Índice de robo actual
         $porcentajeRobos = $totalVehiculos > 0
             ? round(($totalReportes / $totalVehiculos) * 100, 1)
             : 0;
 
-        // Lógica de "Meta de Registro": Supongamos que la meta son 100 vehículos
+        // Lógica de Gestión: Avance respecto a meta mensual (Ejemplo: 100 unidades)
         $metaMensual = 100;
-        $porcentajeMeta = round(($totalVehiculos / $metaMensual) * 100, 1);
+        $porcentajeMeta = $totalVehiculos > 0
+            ? round(($totalVehiculos / $metaMensual) * 100, 1)
+            : 0;
 
-        $promedioPorDueno = $totalDuenos > 0 ? round(($totalVehiculos / $totalDuenos), 2) : 0;
+        // Promedio de vehículos por cada dueño registrado
+        $promedioPorDueno = $totalDuenos > 0
+            ? round(($totalVehiculos / $totalDuenos), 2)
+            : 0;
 
-        return view('dashboard', compact(
+        // Retornamos la vista dashboard (asegúrate que la ruta en views sea dashboard.index o dashboard)
+        return view('dashboard.index', compact(
             'totalDuenos',
             'totalVehiculos',
             'totalReportes',
-            'porcentajeRobos', // Cambiamos el nombre para que sea real
-            'porcentajeMeta',  // Esto muestra avance
+            'porcentajeRobos',
+            'porcentajeMeta',
             'promedioPorDueno'
         ));
     }

@@ -5,88 +5,94 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Vehiculo;
+use App\Models\Dueno;
+use Illuminate\Support\Facades\DB;
 
 class VehiculoController extends Controller
 {
+    /**
+     * Muestra la vista principal del catálogo.
+     */
     public function index()
     {
-        // Simplemente retorna la vista. La lista se cargará por AJAX.
-        return view('vehiculos.index');
-    }
-    public function getVehiculos()
-    {
-        $vehiculos = \App\Models\Vehiculo::with('duenoActual.dueno')->get();
-
-        // Transformamos los datos a un formato que DataTable entienda
-        $data = $vehiculos->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'vin' => $v->vin,
-                'placas' => $v->placas,
-                'modelo' => $v->marca . ' ' . $v->modelo,
-                'dueno' => $v->duenoActual ? $v->duenoActual->dueno->nombre_completo : 'Sin dueño',
-                'acciones' => '<button class="btn btn-sm btn-info">Editar</button>'
-            ];
-        });
-
-        return response()->json(['data' => $data]);
+        return view('catalogos.vehiculos.index');
     }
 
-    // En VehiculoController.php
-
+    /**
+     * Retorna los datos para la DataTable en formato JSON. [cite: 18, 25]
+     * Cumple con la Parte 3: Tabla dinámica y consulta AJAX. [cite: 17, 18]
+     */
     public function getVehiculosData()
     {
-        // IMPORTANTE: Forzamos la respuesta limpia de la tabla 'vehicles'
-        // sin relaciones pesadas para que el conteo en JS sea instantáneo.
-        $vehiculos = \App\Models\Vehiculo::all();
+        // Usamos Eager Loading para obtener el dueño actual sin N+1
+        $vehiculos = Vehiculo::with(['duenos' => function($query) {
+            $query->where('is_current', true);
+        }])->get();
+
         return response()->json(['data' => $vehiculos]);
     }
 
+    /**
+     * Proceso de Alta (Create) de Vehículo. [cite: 14]
+     * Maneja la transacción para asegurar la integridad de la base de datos.
+     */
     public function store(Request $request)
     {
+        $request->validate([
+            'vin' => 'required|unique:vehicles,vin',
+            'placas' => 'required',
+            'dueno_id' => 'required|exists:owners,id',
+            'modelo' => 'required'
+        ]);
+
         try {
-            // Asegúrate de que los nombres de las columnas coincidan con tu DB manual
-            $vehiculo = \App\Models\Vehiculo::create([
+            DB::beginTransaction();
+
+            // 1. Crear el vehículo usando POO
+            $vehiculo = Vehiculo::create([
                 'vin' => $request->vin,
                 'license_plate' => $request->placas,
                 'model' => $request->modelo,
-                'brand' => 'Genérica',
+                'brand' => $request->brand ?? 'S/M',
             ]);
 
-            // Guardamos la relación
-            \Illuminate\Support\Facades\DB::table('vehicle_ownership')->insert([
-                'vehicle_id' => $vehiculo->id,
-                'owner_id' => $request->dueno_id,
+            // 2. Registrar el dueño actual en la tabla pivote [cite: 2, 4]
+            $vehiculo->duenos()->attach($request->dueno_id, [
                 'is_current' => true,
                 'acquisition_date' => now()
             ]);
 
-            return response()->json(['success' => true]);
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Vehículo registrado con éxito.']);
         } catch (\Exception $e) {
-            // Si hay un error 500, aquí lo atrapamos para que no rompa el JS
-            return response()->json(['error' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json(['error' => 'Error al registrar: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Módulo de Consulta (Parte 4).
+     * Busca por placa o VIN y regresa historial completo. [cite: 2]
+     */
     public function buscar(Request $request)
     {
-        $request->validate(['termino' => 'required|string']);
+        $termino = $request->termino;
 
-        $busqueda = $request->termino;
-
-        // Buscamos el vehículo y cargamos su dueño y sus reportes de robo
-        $vehiculo = Vehiculo::with(['dueno', 'reportes'])
-            ->where('vin', $busqueda)
-            ->orWhere('placas', $busqueda)
+        // Buscamos con todas sus relaciones para cumplir con el reporte histórico
+        $vehiculo = Vehiculo::with(['duenos', 'reportes'])
+            ->where('vin', $termino)
+            ->orWhere('license_plate', $termino)
             ->first();
 
         if (!$vehiculo) {
-            return response()->json(['error' => 'No se encontró ningún vehículo con esos datos.'], 404);
+            return response()->json(['error' => 'El vehículo no está en la base de datos.'], 404);
         }
 
         return response()->json([
             'vehiculo' => $vehiculo,
-            'dueno' => $vehiculo->dueno,
-            'tiene_reporte' => $vehiculo->reportes->where('estatus', 'ACTIVO')->count() > 0
+            'historial_duenos' => $vehiculo->duenos, // Todos los dueños históricos
+            'reportes' => $vehiculo->reportes,       // Detalles de robos si existen
+            'tiene_robo' => $vehiculo->reportes->count() > 0
         ]);
     }
 }

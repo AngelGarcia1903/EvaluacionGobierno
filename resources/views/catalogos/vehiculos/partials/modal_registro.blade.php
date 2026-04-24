@@ -20,7 +20,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">PROPIETARIO *</label>
                             <select name="dueno_id" id="selectDueno" class="form-select border-0 bg-light p-3" style="border-radius: 12px;" required>
-                                <option value="">Cargando propietarios...</option>
+                                <option value="">Seleccionar propietario...</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -37,36 +37,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Lógica de carga de propietarios al abrir el modal
-    $('#modalVehiculo').on('show.bs.modal', function () {
-        $.get("{{ route('duenos.data') }}", function(res) {
-            let options = '<option value="">Seleccionar propietario...</option>';
-            res.data.forEach(dueno => {
-                options += `<option value="${dueno.id}">${dueno.full_name}</option>`;
-            });
-            $('#selectDueno').html(options);
-        });
-    });
-
-    // Envío del formulario por AJAX (Requisito Punto 18) [cite: 18]
-    $('#formNuevoVehiculo').on('submit', function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: "{{ route('vehiculos.store') }}",
-            method: "POST",
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#modalVehiculo').modal('hide');
-                $('#formNuevoVehiculo')[0].reset();
-                Swal.fire('¡Éxito!', 'Vehículo guardado en el catálogo.', 'success');
-                // Disparamos evento para recargar la DataTable en el index
-                $(document).trigger('vehiculoRegistrado');
-            },
-            error: function(err) {
-                Swal.fire('Error', 'Verifique que el VIN o Placas no existan.', 'error');
-            }
-        });
-    });
-</script>

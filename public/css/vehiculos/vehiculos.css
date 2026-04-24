@@ -1,0 +1,53 @@
+/* --- ESTILOS DE LA TABLA DINÁMICA (Index) --- */
+#tablaDinamicaVehiculos thead th {
+    background-color: #f8fafc;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-top: none;
+}
+
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+/* Personalización de DataTables para que coincida con Bootstrap */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #0f172a !important;
+    color: white !important;
+    border-radius: 8px;
+    border: none;
+}
+
+/* --- ESTILOS DEL MODAL (Partial: modal_registro) --- */
+
+/* Fondo sutil para los inputs del formulario */
+#formNuevoVehiculo .form-control,
+#formNuevoVehiculo .form-select {
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+#formNuevoVehiculo .form-control:focus,
+#formNuevoVehiculo .form-select:focus {
+    background-color: #fff !important;
+    border-color: #0f172a;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+/* Ajustes de diseño para el modal responsivo */
+.modal-content {
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+/* Etiquetas de formulario más legibles */
+#formNuevoVehiculo .form-label {
+    margin-bottom: 0.5rem;
+    color: #475569;
+}

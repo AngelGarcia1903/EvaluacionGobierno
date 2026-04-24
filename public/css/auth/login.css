@@ -1,0 +1,20 @@
+body {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+.card {
+    border-radius: 20px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+}
+.btn-primary {
+    background: #4f46e5;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background: #4338ca;
+    transform: translateY(-2px);
+}

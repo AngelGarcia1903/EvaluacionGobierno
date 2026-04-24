@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/vehiculos/vehiculos.css') }}">
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -32,45 +36,8 @@
 </div>
 
 @include('catalogos.vehiculos.partials.modal_registro')
-
-<script>
-$(document).ready(function() {
-    // Inicialización de Tabla Dinámica (Requisito Parte 3, Punto 17)
-    const table = $('#tablaDinamicaVehiculos').DataTable({
-        ajax: "{{ route('vehiculos.data') }}", // Consulta vía AJAX/JSON [cite: 18]
-        columns: [
-            { data: 'vin', render: function(data) { return `<code class="text-primary fw-bold">${data}</code>`; } },
-            { data: 'license_plate', render: function(data) { return `<span class="badge bg-dark">${data}</span>`; } },
-            { data: 'model' },
-            { data: 'brand' },
-            {
-                data: null,
-                render: function(data) {
-                    return `
-                        <div class="text-center">
-                            <button class="btn btn-sm btn-outline-primary border-0 me-1"><i class="bi bi-pencil-square"></i></button>
-                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
-                        </div>`;
-                }
-            }
-        ],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }, // Idioma español [cite: 16]
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-file-earmark-excel me-2"></i>Exportar a Excel',
-                className: 'btn btn-success btn-sm border-0 mb-3',
-                exportOptions: { columns: [0, 1, 2, 3] } // Exportar solo datos relevantes [cite: 20]
-            }
-        ],
-        responsive: true
-    });
-
-    // Escuchar el evento de éxito del modal para recargar la tabla
-    $(document).on('vehiculoRegistrado', function() {
-        table.ajax.reload();
-    });
-});
-</script>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/vehiculos/vehiculos.js') }}"></script>
+@endpush
