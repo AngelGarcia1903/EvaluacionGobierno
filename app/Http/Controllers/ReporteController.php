@@ -16,32 +16,41 @@ class ReporteController extends Controller
         return view('catalogos.reportes', compact('vehiculos'));
     }
 
+
     public function store(Request $request)
     {
-        $request->validate([
-            'vehiculo_id' => 'required',
-            'descripcion' => 'required|string|min:10',
-            'fecha_reporte' => 'required|date'
-        ]);
-
-        // Usamos una transacción para asegurar que se cree el reporte
-        // y se actualice el estado del vehículo al mismo tiempo (Integridad de datos)
-        DB::transaction(function () use ($request) {
-            ReporteRobo::create([
-                'vehiculo_id' => $request->vehiculo_id,
-                'descripcion' => $request->descripcion,
-                'fecha_reporte' => $request->fecha_reporte,
-                'estatus' => 'ACTIVO'
+        try {
+            // 1. Validar con los nombres exactos de tu formulario HTML
+            $request->validate([
+                'vehiculo_id' => 'required',
+                'fecha_reporte' => 'required|date',
+                'descripcion' => 'required|string'
             ]);
-        });
 
-        return response()->json(['success' => 'Reporte de robo registrado exitosamente.']);
+            // 2. Insertar en la tabla que definiste en la Parte 1
+            // Nota: Asegúrate de que los nombres de las columnas (ej: vehicle_id)
+            // sean los que creaste en MySQL.
+            \Illuminate\Support\Facades\DB::table('theft_reports')->insert([
+                'vehicle_id' => $request->vehiculo_id,
+                'report_date' => $request->fecha_reporte,
+                'description' => $request->descripcion,
+                'status'      => 'ACTIVO'
+            ]);
+
+            return response()->json(['success' => 'El reporte ha sido registrado en la base de datos.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getReportesData()
     {
-        // Eager Loading para traer datos del vehículo y el dueño en una sola consulta
-        $reportes = ReporteRobo::with('vehiculo.dueno')->orderBy('created_at', 'desc')->get();
+        // Obtenemos los reportes uniendo con la tabla de vehículos para mostrar datos útiles
+        $reportes = \Illuminate\Support\Facades\DB::table('theft_reports')
+            ->join('vehicles', 'theft_reports.vehicle_id', '=', 'vehicles.id')
+            ->select('theft_reports.*', 'vehicles.license_plate', 'vehicles.model')
+            ->get();
+
         return response()->json(['data' => $reportes]);
     }
 }

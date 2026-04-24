@@ -8,6 +8,11 @@ use App\Models\Vehiculo;
 
 class VehiculoController extends Controller
 {
+    public function index()
+    {
+        // Simplemente retorna la vista. La lista se cargará por AJAX.
+        return view('vehiculos.index');
+    }
     public function getVehiculos()
     {
         $vehiculos = \App\Models\Vehiculo::with('duenoActual.dueno')->get();
@@ -26,25 +31,29 @@ class VehiculoController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+    // En VehiculoController.php
+
+    public function getVehiculosData()
+    {
+        // IMPORTANTE: Forzamos la respuesta limpia de la tabla 'vehicles'
+        // sin relaciones pesadas para que el conteo en JS sea instantáneo.
+        $vehiculos = \App\Models\Vehiculo::all();
+        return response()->json(['data' => $vehiculos]);
+    }
+
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'vin' => 'required|unique:vehicles,vin',
-                'placas' => 'required|unique:vehicles,license_plate',
-                'dueno_id' => 'required',
-                'modelo' => 'required'
-            ]);
-
-            // 1. Creamos el vehículo en la tabla 'vehicles'
+            // Asegúrate de que los nombres de las columnas coincidan con tu DB manual
             $vehiculo = \App\Models\Vehiculo::create([
                 'vin' => $request->vin,
                 'license_plate' => $request->placas,
                 'model' => $request->modelo,
-                'brand' => 'Genérica', // O el campo que tengas
+                'brand' => 'Genérica',
             ]);
 
-            // 2. Creamos la relación en 'vehicle_ownership' (Requisito POO)
+            // Guardamos la relación
             \Illuminate\Support\Facades\DB::table('vehicle_ownership')->insert([
                 'vehicle_id' => $vehiculo->id,
                 'owner_id' => $request->dueno_id,
@@ -54,6 +63,7 @@ class VehiculoController extends Controller
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
+            // Si hay un error 500, aquí lo atrapamos para que no rompa el JS
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

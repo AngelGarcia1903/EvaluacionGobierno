@@ -80,9 +80,10 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="stat-label mb-1 opacity-75">Total de Vehículos</p>
-                        <h2 class="display-5 fw-bold mb-3" id="countVehiculos">{{ $totalVehiculos }}</h2>
+                        <h2 id="countVehiculos" class="display-5 fw-bold mb-3" >{{ $totalVehiculos }}</h2>
                         <div class="stat-label">
-                            <i class="bi bi-arrow-up-short"></i> 12% <span class="opacity-75 fw-normal">vs mes anterior</span>
+                            <i class="bi bi-arrow-up-short"></i>
+                            <span id="txtPorcentajeMeta">{{ $porcentajeMeta }}%</span> <span class="opacity-75 fw-normal">de la meta mensual</span>
                         </div>
                     </div>
                     <div class="icon-box">
@@ -97,10 +98,10 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="stat-label mb-1 opacity-75">Reportes de Robo</p>
-                        <h2 class="display-5 fw-bold mb-3" id="countRobos">{{ $totalReportes ?? 0 }}</h2>
+                        <h2 id="countRobos" class="display-5 fw-bold mb-3">{{ $totalReportes ?? 0 }}</h2>
                         <div class="stat-label">
-                            <i class="bi bi-arrow-down-short"></i> 5% <span class="opacity-75 fw-normal">vs mes anterior</span>
-                        </div>
+                            <i class="bi bi-arrow-down-short"></i>
+                            <span id="txtPorcentajeRobos">{{ $porcentajeRobos }}%</span> <span class="opacity-75 fw-normal">índice de robo actual</span>                        </div>
                     </div>
                     <div class="icon-box">
                         <i class="bi bi-exclamation-triangle-fill fs-3"></i>
@@ -114,9 +115,10 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="stat-label mb-1 opacity-75">Propietarios</p>
-                        <h2 class="display-5 fw-bold mb-3" id="countPropietarios">{{ $totalDuenos }}</h2>
+                        <h2 id="countPropietarios" class="display-5 fw-bold mb-3">{{ $totalDuenos }}</h2>
                         <div class="stat-label">
-                            <i class="bi bi-arrow-up-short"></i> 8% <span class="opacity-75 fw-normal">vs mes anterior</span>
+                            <i class="bi bi-arrow-up-short"></i>
+                            <span id="txtPromedioDueno">{{ $promedioPorDueno }}</span> <span class="opacity-75 fw-normal">promedio por dueño</span>
                         </div>
                     </div>
                     <div class="icon-box">
@@ -218,9 +220,37 @@
         }
 
         function cargarEstadisticas() {
-            $.get("{{ route('vehiculos.data') }}", function(res) { $('#countVehiculos').text(res.data.length); });
-            $.get("{{ route('duenos.data') }}", function(res) { $('#countPropietarios').text(res.data.length); });
-            $.get("{{ route('reportes.data') }}", function(res) { $('#countRobos').text(res.data.length); });
+            const metaMensual = 100;
+
+            $.when(
+                $.get("{{ route('vehiculos.data') }}"),
+                $.get("{{ route('duenos.data') }}"),
+                $.get("{{ route('reportes.data') }}")
+            ).done(function(resVehiculos, resDuenos, resReportes) {
+
+                // Extraemos la longitud de los arreglos de datos
+                // Accedemos a [0].data porque $.get devuelve [data, status, xhr]
+                const totalV = resVehiculos[0].data ? resVehiculos[0].data.length : 0;
+                const totalD = resDuenos[0].data ? resDuenos[0].data.length : 0;
+                const totalR = resReportes[0].data ? resReportes[0].data.length : 0;
+
+                // Actualizar Números
+                $('#countVehiculos').text(totalV);
+                $('#countPropietarios').text(totalD);
+                $('#countRobos').text(totalR);
+
+                // Cálculos
+                const porcMeta = ((totalV / metaMensual) * 100).toFixed(1);
+                const porcRobo = totalV > 0 ? ((totalR / totalV) * 100).toFixed(1) : 0;
+                const promDueno = totalD > 0 ? (totalV / totalD).toFixed(2) : 0;
+
+                // Inyectar en leyendas
+                $('#txtPorcentajeMeta').text(porcMeta + '%');
+                $('#txtPorcentajeRobos').text(porcRobo + '%');
+                $('#txtPromedioDueno').text(promDueno);
+            }).fail(function() {
+                console.error("Error al sincronizar estadísticas.");
+            });
         }
 
         $('#formNuevoVehiculo').on('submit', function(e) {
