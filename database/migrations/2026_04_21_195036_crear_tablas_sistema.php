@@ -9,45 +9,58 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        // Tabla de Vehículos [cite: 21]
-        Schema::create('vehiculos', function (Blueprint $table) {
+        // 1. Tabla de Vehículos
+        Schema::create('vehicles', function ($table) {
             $table->id();
             $table->string('vin', 17)->unique();
-            $table->string('placas', 10)->unique();
-            $table->string('marca');
-            $table->string('modelo');
+            $table->string('license_plate', 10)->unique();
+            $table->string('brand');
+            $table->string('model');
+            $table->year('year_model')->nullable();
+            $table->string('color')->nullable();
             $table->timestamps();
         });
 
-        // Tabla de Dueños [cite: 14]
-        Schema::create('duenos', function (Blueprint $table) {
+        // 2. Tabla de Dueños
+        // 2. Tabla de Dueños (Actualizada)
+        Schema::create('owners', function ($table) {
             $table->id();
-            $table->string('nombre_completo');
-            $table->string('rfc')->unique();
+            $table->string('full_name');
+            $table->string('curp_rfc', 20)->unique();
+            $table->string('phone', 15)->nullable();
+            // Campos de dirección detallada
+            $table->string('calle');
+            $table->string('colonia');
+            $table->string('num_ext', 10);
+            $table->string('num_int', 10)->nullable();
+            $table->timestamps(); // Es mejor habilitarlos para saber cuándo se registró el dueño
+        });
+        // 3. Historial (Tabla Pivote)
+        Schema::create('vehicle_ownership', function ($table) {
+            $table->id();
+            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
+            $table->boolean('is_current')->default(false);
+            $table->date('acquisition_date')->nullable();
             $table->timestamps();
         });
 
-        // Historial y Dueño Actual [cite: 2, 21]
-        Schema::create('historial_duenos', function (Blueprint $table) {
+        // 4. Reportes de Robo
+        Schema::create('theft_reports', function ($table) {
             $table->id();
-            $table->foreignId('vehiculo_id')->constrained('vehiculos')->onDelete('cascade');
-            $table->foreignId('dueno_id')->constrained('duenos')->onDelete('cascade');
-            $table->boolean('es_dueno_actual')->default(false);
-            $table->timestamps();
-        });
-
-        // Reportes de Robo [cite: 2, 14]
-        Schema::create('reportes_robo', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('vehiculo_id')->constrained('vehiculos')->onDelete('cascade');
-            $table->text('detalles');
-            $table->boolean('tiene_reporte')->default(true);
+            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            $table->string('report_number')->unique()->nullable();
+            $table->text('description');
+            $table->dateTime('report_date');
+            $table->enum('status', ['active', 'recovered'])->default('active');
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

@@ -22,11 +22,11 @@
             <table class="table table-hover align-middle w-100" id="tablaDinamicaVehiculos">
                 <thead class="table-light">
                     <tr>
+                        <th class="text-center">Acciones</th>
                         <th>VIN</th>
                         <th>Placas</th>
                         <th>Modelo</th>
                         <th>Marca</th>
-                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>

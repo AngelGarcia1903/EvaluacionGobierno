@@ -33,7 +33,7 @@ class AuthController extends Controller
             // Regenerar sesión es una buena práctica de seguridad (opcional pero suma puntos)
             $request->session()->regenerate();
 
-            return redirect()->route('dashboard.index'); // Nombre de ruta estándar
+            return redirect()->route('dashboard'); // Nombre de ruta estándar
         }
 
         return back()->withErrors(['login_error' => 'Usuario o contraseña incorrectos.']);

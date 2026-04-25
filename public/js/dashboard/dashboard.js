@@ -7,7 +7,7 @@ function abrirModalVehiculo() {
     myModal.show();
 
     // AJAX para cargar dueños (JSON)
-    $.get("/api/duenos-data", function (res) {
+    $.get("/duenos-data", function (res) {
         select
             .empty()
             .append('<option value="">Seleccionar propietario...</option>');
@@ -24,9 +24,9 @@ $(document).ready(function () {
 
     function cargarEstadisticas() {
         $.when(
-            $.get("/api/vehiculos-count"),
-            $.get("/api/duenos-count"),
-            $.get("/api/reportes-count"),
+            $.get("/vehiculos-count"),
+            $.get("/duenos-count"),
+            $.get("/reportes-count"),
         ).done(function (v, d, r) {
             $("#countVehiculos").text(v[0].total);
             $("#countPropietarios").text(d[0].total);

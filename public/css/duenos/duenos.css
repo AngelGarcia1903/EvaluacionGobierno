@@ -1,0 +1,201 @@
+/* public/css/duenos/duenos.css */
+
+/* Estilo de la tabla de propietarios */
+#tablaDuenos thead th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.65rem; /* Ajusta este valor (0.7rem, 10px, etc.) */
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none;
+}
+
+#tablaDuenos tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#tablaDuenos tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Formulario de registro lateral */
+#formDueno .form-control {
+    border: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+}
+
+#formDueno .form-control:focus {
+    border-color: #1e293b;
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+}
+
+.badge.bg-success-subtle {
+    background-color: #dcfce7 !important;
+}
+
+/* Estilos extraídos del partial form_registro (Parte 3) */
+.card-registro-dueno {
+    border-radius: 15px;
+}
+
+.card-registro-header {
+    padding-top: 1.5rem; /* pt-4 */
+}
+
+.title-dueno {
+    color: #1e293b;
+}
+
+.input-dueno-custom {
+    border-radius: 10px;
+}
+
+.btn-dueno-submit {
+    border-radius: 12px;
+    background-color: #1e293b;
+    transition: all 0.3s ease;
+}
+
+.btn-dueno-submit:hover {
+    background-color: #334155;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+}
+
+/* --- NUEVA ESTRUCTURA FIJA --- */
+
+/* Alineación de Botón Exportar y Buscador */
+.dataTables_wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Fuerza a que el botón y el buscador estén en la misma línea */
+.dataTables_wrapper .dt-buttons {
+    float: left;
+    margin-bottom: 0;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+    margin-top: 0;
+}
+
+/* Limpia los floats para evitar saltos de línea */
+.dataTables_wrapper::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* CONTENEDOR CON SCROLL (Solo la tabla) */
+.table-responsive {
+    width: 100%;
+    margin-top: 15px;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+/* Mantiene la primera columna (ACCIONES) fija al hacer scroll */
+#tablaDuenos thead th:first-child,
+#tablaDuenos tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #ffffff; /* Fondo sólido para que no se transparente el texto de atrás */
+    border-right: 2px solid #e2e8f0;
+}
+
+#tablaDuenos thead th:first-child {
+    background-color: #f1f5f9; /* Color de la cabecera */
+    z-index: 3;
+}
+
+/* FOOTER DE LA TABLA (Info y Paginación) */
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 15px;
+    display: flex;
+    justify-content: 间-between;
+    align-items: center;
+}
+
+/* Alineación perfecta de controles */
+.dataTables_wrapper .d-flex {
+    gap: 1rem;
+}
+
+/* Evitar que DataTables use sus floats viejos */
+.dataTables_filter,
+.dt-buttons {
+    float: none !important;
+    margin: 0 !important;
+}
+
+/* SCROLL ÚNICAMENTE PARA EL CUERPO DE LA TABLA */
+.dataTables_scrollBody {
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+}
+
+/* FIJAR COLUMNA DE ACCIONES (Sticky) */
+#tablaDuenos thead th:first-child,
+#tablaDuenos tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background-color: white !important;
+    border-right: 2px solid #e2e8f0;
+}
+
+#tablaDuenos thead th:first-child {
+    background-color: #f8f9fa !important;
+    z-index: 11;
+}
+
+/* Ajuste para que el buscador no se pegue al borde */
+.dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    outline: none;
+}
+
+#btnCancelarEdicion {
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+#btnCancelarEdicion:hover {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+/* FIJAR COLUMNA DE ACCIONES (Encabezado y Celdas) */
+
+/* Esto fija el título (TH) */
+.dataTables_scrollHead th:first-child {
+    position: sticky !important;
+    left: 0;
+    z-index: 21; /* Mayor que el resto de los encabezados */
+    background-color: #f1f5f9 !important; /* Color gris del encabezado */
+}
+
+/* Esto fija los botones (TD) */
+.dataTables_scrollBody td:first-child {
+    position: sticky !important;
+    left: 0;
+    z-index: 20;
+    background-color: #ffffff !important; /* Fondo blanco para que no se transparente el texto */
+    border-right: 2px solid #e2e8f0;
+}
+/* Bordes de validación personalizados */
+.is-invalid-custom {
+    border: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25) !important;
+}
+
+.is-valid-custom {
+    border: 2px solid #22c55e !important;
+    box-shadow: 0 0 0 0.25rem rgba(34, 197, 94, 0.25) !important;
+}

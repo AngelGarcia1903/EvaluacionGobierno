@@ -24,9 +24,9 @@ class VehiculoController extends Controller
      */
     public function getVehiculosData()
     {
-        // Usamos Eager Loading para obtener el dueño actual sin N+1
-        $vehiculos = Vehiculo::with(['duenos' => function($query) {
-            $query->where('is_current', true);
+        // Cargamos el vehículo con su "duenoActual" y el "dueno" dentro de ese registro
+        $vehiculos = Vehiculo::with(['duenos' => function ($q) {
+            $q->wherePivot('is_current', true);
         }])->get();
 
         return response()->json(['data' => $vehiculos]);
@@ -38,36 +38,65 @@ class VehiculoController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. Validar (Nombres de campos exactos al HTML)
         $request->validate([
             'vin' => 'required|unique:vehicles,vin',
-            'placas' => 'required',
-            'dueno_id' => 'required|exists:owners,id',
-            'modelo' => 'required'
+            'license_plate' => 'required|unique:vehicles,license_plate',
+            'brand' => 'required',
+            'model' => 'required',
+            'year_model' => 'required|numeric',
+            'owner_id' => 'required|exists:owners,id' // El ID del dueño seleccionado
         ]);
 
         try {
-            DB::beginTransaction();
+            // 2. Crear el vehículo
+            $vehiculo = Vehiculo::create($request->all());
 
-            // 1. Crear el vehículo usando POO
-            $vehiculo = Vehiculo::create([
-                'vin' => $request->vin,
-                'license_plate' => $request->placas,
-                'model' => $request->modelo,
-                'brand' => $request->brand ?? 'S/M',
-            ]);
-
-            // 2. Registrar el dueño actual en la tabla pivote [cite: 2, 4]
-            $vehiculo->duenos()->attach($request->dueno_id, [
+            // 3. Crear la relación en la tabla pivote (Historial)
+            DB::table('vehicle_ownership')->insert([
+                'vehicle_id' => $vehiculo->id,
+                'owner_id' => $request->owner_id,
                 'is_current' => true,
-                'acquisition_date' => now()
+                'acquisition_date' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Vehículo registrado con éxito.']);
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => 'Error al registrar: ' . $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'vin' => 'required|unique:vehicles,vin,' . $id,
+            'license_plate' => 'required|unique:vehicles,license_plate,' . $id,
+            'brand' => 'required',
+            'model' => 'required',
+            'year_model' => 'required|numeric',
+            'owner_id' => 'required|exists:owners,id'
+        ]);
+
+        $vehiculo = Vehiculo::findOrFail($id);
+        $vehiculo->update($request->all());
+
+        // Actualizar dueño (opcional: podrías crear un nuevo registro histórico aquí)
+        DB::table('vehicle_ownership')
+            ->where('vehicle_id', $id)
+            ->update(['is_current' => false]);
+
+        DB::table('vehicle_ownership')->insert([
+            'vehicle_id' => $id,
+            'owner_id' => $request->owner_id,
+            'is_current' => true,
+            'acquisition_date' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -94,5 +123,16 @@ class VehiculoController extends Controller
             'reportes' => $vehiculo->reportes,       // Detalles de robos si existen
             'tiene_robo' => $vehiculo->reportes->count() > 0
         ]);
+    }
+
+    public function edit($id)
+    {
+        return response()->json(Vehiculo::find($id));
+    }
+
+    public function destroy($id)
+    {
+        Vehiculo::destroy($id);
+        return response()->json(['success' => true]);
     }
 }

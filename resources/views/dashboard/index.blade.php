@@ -41,7 +41,7 @@
     </div>
 </div>
 
-@include('catalogos.vehiculos.partials._modal_create')
+@include('catalogos.vehiculos.partials.modal_registro')
 
 @endsection
 

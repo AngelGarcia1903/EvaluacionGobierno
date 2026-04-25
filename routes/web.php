@@ -1,50 +1,35 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\VehiculoController;
-use App\Http\Controllers\DuenoController;
-use App\Http\Controllers\ReporteController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\{AuthController, VehiculoController, DuenoController, ReporteController, DashboardController, ConsultaController, SoapController};
 
-/*
-|--------------------------------------------------------------------------
-| Rutas Públicas
-|--------------------------------------------------------------------------
-*/
-
-// La raíz ahora redirige al formulario de login
+// --- Rutas Públicas ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-
-// Mantenemos /login con GET por si el middleware redirige explícitamente a esa URL
-Route::get('/login', [AuthController::class, 'showLogin']);
-
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| Rutas Protegidas (Requieren Sesión Activa)
-|--------------------------------------------------------------------------
-*/
+// --- Rutas Protegidas ---
 Route::middleware(['check.session'])->group(function () {
-
-    // Panel Principal
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // --- PARTE 3: Catálogos (CRUD) ---
-    // Vehículos
+
+    // Catálogos (CRUD)
+    Route::get('/vehiculos/data', [VehiculoController::class, 'getVehiculosData'])->name('vehiculos.data');
     Route::resource('vehiculos', VehiculoController::class);
-    Route::get('/api/vehiculos/data', [VehiculoController::class, 'getVehiculosData'])->name('vehiculos.data');
 
-    // Dueños
+    Route::get('/duenos/data', [DuenoController::class, 'getDuenosData'])->name('duenos.data');
+    // 2. Ruta explícita para guardar (Esto garantiza que /duenos acepte POST)
+    Route::post('/duenos', [DuenoController::class, 'store'])->name('duenos.store');
     Route::resource('duenos', DuenoController::class);
-    Route::get('/api/duenos/data', [DuenoController::class, 'getDuenosData'])->name('duenos.data');
 
-    // Reportes de Robo
+    Route::get('/reportes/data', [ReporteController::class, 'getReportesData'])->name('reportes.data');
     Route::resource('reportes', ReporteController::class);
-    Route::get('/api/reportes/data', [ReporteController::class, 'getReportesData'])->name('reportes.data');
 
-    // --- PARTE 4: Módulo de Consulta (Buscador VIN/Placa) ---
-    Route::get('/consultar', [VehiculoController::class, 'showConsulta'])->name('consulta.index');
-    Route::post('/consultar/buscar', [VehiculoController::class, 'buscar'])->name('consulta.buscar');
+    // Consultas (Parte 4)
+    Route::get('/consultar', [ConsultaController::class, 'index'])->name('consulta.index');
+    Route::post('/consultar/buscar', [ConsultaController::class, 'buscar'])->name('consulta.buscar');
 });
+
+// --- Webservice SOAP (Sin CSRF y fuera de sesión) ---
+// Usa PreventRequestForgery que es el nombre moderno en Laravel 11
+Route::post('/soap-server', [SoapController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);

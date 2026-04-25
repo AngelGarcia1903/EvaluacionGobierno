@@ -1,8 +1,8 @@
-<div class="card border-0 shadow-lg p-4 mb-4" style="border-radius: 25px;">
+<div class="card border-0 shadow-lg p-4 mb-4 card-resultado">
     <div id="statusAlert"></div>
 
     <div class="row mt-4 mb-4">
-        <div class="col-md-6 border-end">
+        <div class="col-md-6 border-end especificaciones-unidad">
             <h6 class="text-muted small fw-bold text-uppercase mb-3">Especificaciones de la Unidad [cite: 2]</h6>
             <p class="mb-1"><strong>Marca/Modelo:</strong> <span id="resModelo"></span></p>
             <p class="mb-1"><strong>VIN:</strong> <code class="text-dark" id="resVIN"></code></p>
@@ -10,7 +10,8 @@
         </div>
         <div class="col-md-6 ps-4">
             <h6 class="text-muted small fw-bold text-uppercase mb-3">Información del Sistema</h6>
-            <p class="mb-0">Fecha de consulta: {{ date('d/m/Y') }}</p>
+            <p class="mb-1"><strong>Fecha de consulta:</strong> {{ date('d/m/Y') }}</p>
+            <p class="mb-0 text-muted small"><i class="bi bi-info-circle me-1"></i> Información generada por Seguridad Pública[cite: 2].</p>
         </div>
     </div>
 

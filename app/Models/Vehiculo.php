@@ -41,4 +41,12 @@ class Vehiculo extends Model
     {
         return $this->hasMany(ReporteRobo::class, 'vehicle_id');
     }
+
+    // MEJORA: Esta relación permite obtener directamente la lista de objetos "Dueno"
+    public function duenos()
+    {
+        // Relaciona Vehiculo con Dueno a través de vehicle_ownership
+        return $this->belongsToMany(Dueno::class, 'vehicle_ownership', 'vehicle_id', 'owner_id')
+            ->withPivot('is_current', 'acquisition_date'); // Trae los datos de la tabla intermedia
+    }
 }

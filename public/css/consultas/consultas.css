@@ -1,0 +1,58 @@
+/* public/css/consultas/consultas.css */
+.result-card {
+    border-radius: 15px;
+    border-left: 5px solid #1e293b;
+}
+
+#inputBusqueda {
+    height: 60px;
+    font-size: 1.1rem;
+}
+
+#inputBusqueda:focus {
+    box-shadow: none;
+    border: 1px solid #6366f1;
+}
+
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+#tablaHistorial thead th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+/* Estilos para el Partial de Resultados (Parte 4) */
+.card-resultado {
+    border-radius: 25px;
+    border-top: 5px solid #0f172a; /* Acento visual de autoridad */
+}
+
+#statusAlert .alert {
+    border-radius: 15px;
+    border: none;
+    font-weight: 600;
+}
+
+.especificaciones-unidad {
+    background-color: #f8fafc;
+    border-radius: 15px;
+    padding: 15px;
+}
+
+#tablaHistorial.table thead th {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* Badge personalizado para Dueño Actual */
+.badge-dueno-actual {
+    background: linear-gradient(45deg, #1e293b, #334155);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+}

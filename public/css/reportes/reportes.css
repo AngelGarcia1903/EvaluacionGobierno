@@ -26,3 +26,31 @@
     letter-spacing: 1px;
     font-weight: 700;
 }
+
+/* Estilos específicos para el formulario de reporte (Parte 3) */
+.card-reporte {
+    border-radius: 20px;
+}
+
+.form-reporte-input {
+    border-radius: 10px;
+}
+
+.btn-reporte-submit {
+    border-radius: 12px;
+    background-color: #dc3545; /* Color institucional de alerta */
+    transition: all 0.3s ease;
+}
+
+.btn-reporte-submit:hover {
+    background-color: #bb2d3b;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+/* Mejora de legibilidad para etiquetas de catálogo */
+.label-reporte {
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}

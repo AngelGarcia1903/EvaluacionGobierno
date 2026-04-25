@@ -13,8 +13,9 @@ class User extends Authenticatable
     // AÑADE ESTA LÍNEA para que Laravel no busque 'updated_at'
     public $timestamps = false;
 
+    // Elimina el uso de HasFactory y Notifiable si no los usas para simplificar el código POO.
     protected $fillable = ['username', 'password', 'name'];
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password'];
 
     protected function casts(): array
     {
