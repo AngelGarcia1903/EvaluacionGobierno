@@ -46,7 +46,7 @@ $(document).ready(function () {
         buttons: [
             {
                 extend: "excelHtml5",
-                text: '<i class="bi bi-file-earmark-excel"></i> Exportar',
+                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
                 className: "btn btn-success btn-sm mb-3",
                 exportOptions: { columns: [1, 2, 3, 4, 5, 6] },
             },

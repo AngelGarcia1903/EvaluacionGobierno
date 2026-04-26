@@ -15,15 +15,15 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Tabla de Vehículos
+        // 1. Tabla de Vehículos (Sin timestamps)
         Schema::create('vehicles', function ($table) {
             $table->id();
             $table->string('vin', 17)->unique();
             $table->string('license_plate', 10)->unique();
             $table->string('brand');
             $table->string('model');
-            $table->year('year_model')->nullable();
+            $table->integer('year_model')->nullable(); // Cambiamos a integer para evitar el error de rango
             $table->string('color')->nullable();
-            $table->timestamps();
         });
 
         // 2. Tabla de Dueños
@@ -47,7 +47,6 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->boolean('is_current')->default(false);
             $table->date('acquisition_date')->nullable();
-            $table->timestamps();
         });
 
         // 4. Reportes de Robo

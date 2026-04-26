@@ -13,14 +13,7 @@ class Vehiculo extends Model
     public $timestamps = false;
 
     // Definimos los campos que se pueden llenar (coinciden con tu SQL)
-    protected $fillable = [
-        'vin',
-        'license_plate',
-        'brand',
-        'model',
-        'year_model',
-        'color'
-    ];
+    protected $fillable = ['vin', 'license_plate', 'brand', 'model', 'year_model', 'color'];
 
     // Relación con el historial (Tabla vehicle_ownership)
     public function historial()
@@ -45,8 +38,7 @@ class Vehiculo extends Model
     // MEJORA: Esta relación permite obtener directamente la lista de objetos "Dueno"
     public function duenos()
     {
-        // Relaciona Vehiculo con Dueno a través de vehicle_ownership
         return $this->belongsToMany(Dueno::class, 'vehicle_ownership', 'vehicle_id', 'owner_id')
-            ->withPivot('is_current', 'acquisition_date'); // Trae los datos de la tabla intermedia
+            ->withPivot('is_current', 'acquisition_date');
     }
 }

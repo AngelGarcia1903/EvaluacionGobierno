@@ -19,17 +19,20 @@
 
     <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
         <div class="table-responsive">
-            <table class="table table-hover align-middle w-100" id="tablaDinamicaVehiculos">
-                <thead class="table-light">
+            <table id="tablaDinamicaVehiculos" class="table table-hover align-middle w-100">
+                <thead class="bg-light">
                     <tr>
-                        <th class="text-center">Acciones</th>
+                        <th class="text-center" style="min-width: 100px;">ACCIONES</th>
                         <th>VIN</th>
-                        <th>Placas</th>
-                        <th>Modelo</th>
-                        <th>Marca</th>
+                        <th>PLACAS</th>
+                        <th>MARCA</th>
+                        <th>MODELO</th>
+                        <th>AÑO</th>
+                        <th>PROPIETARIO ACTUAL</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                    </tbody>
             </table>
         </div>
     </div>

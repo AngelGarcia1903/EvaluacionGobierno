@@ -54,12 +54,10 @@ class VehiculoController extends Controller
 
             // 3. Crear la relación en la tabla pivote (Historial)
             DB::table('vehicle_ownership')->insert([
-                'vehicle_id' => $vehiculo->id,
-                'owner_id' => $request->owner_id,
-                'is_current' => true,
-                'acquisition_date' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'vehicle_id'       => $vehiculo->id,
+                'owner_id'         => $request->owner_id,
+                'is_current'       => true,
+                'acquisition_date' => date('Y-m-d') // Solo la fecha, sin horas ni campos created_at
             ]);
 
             return response()->json(['success' => true]);
@@ -82,18 +80,18 @@ class VehiculoController extends Controller
         $vehiculo = Vehiculo::findOrFail($id);
         $vehiculo->update($request->all());
 
-        // Actualizar dueño (opcional: podrías crear un nuevo registro histórico aquí)
+        // Actualizar dueño actualizando la tabla pivote
+        // 1. Quitar el estado de "actual" a todos los dueños de este vehículo
         DB::table('vehicle_ownership')
             ->where('vehicle_id', $id)
             ->update(['is_current' => false]);
 
+        // 2. Insertar el nuevo registro de dueño actual (sin timestamps)
         DB::table('vehicle_ownership')->insert([
-            'vehicle_id' => $id,
-            'owner_id' => $request->owner_id,
-            'is_current' => true,
-            'acquisition_date' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'vehicle_id'       => $id,
+            'owner_id'         => $request->owner_id,
+            'is_current'       => true,
+            'acquisition_date' => date('Y-m-d')
         ]);
 
         return response()->json(['success' => true]);
@@ -127,7 +125,9 @@ class VehiculoController extends Controller
 
     public function edit($id)
     {
-        return response()->json(Vehiculo::find($id));
+        // Cargamos el vehículo con sus dueños para saber cuál es el actual
+        $vehiculo = Vehiculo::with('duenos')->findOrFail($id);
+        return response()->json($vehiculo);
     }
 
     public function destroy($id)

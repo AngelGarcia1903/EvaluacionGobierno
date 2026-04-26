@@ -51,3 +51,32 @@
     margin-bottom: 0.5rem;
     color: #475569;
 }
+/*tabla*/
+/* Compactar encabezados */
+#tablaDinamicaVehiculos thead th {
+    font-size: 0.65rem !important;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #475569;
+    padding: 12px 8px !important;
+}
+
+/* Columna de Acciones FIJA */
+.dataTables_scrollHead th:first-child,
+.dataTables_scrollBody td:first-child {
+    position: sticky !important;
+    left: 0;
+    z-index: 11;
+    background-color: #ffffff !important;
+    border-right: 2px solid #f1f5f9;
+}
+
+.dataTables_scrollHead th:first-child {
+    background-color: #f8f9fa !important;
+    z-index: 12;
+}
+
+/* Scroll lateral suave */
+.dataTables_scrollBody {
+    border-radius: 0 0 12px 12px;
+}

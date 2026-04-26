@@ -1,5 +1,4 @@
-<div class="modal fade" id="modalVehiculo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade" id="modalVehiculo" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 25px; overflow: hidden;">
             <div class="modal-header border-0 p-4 text-white" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
                 <h5 class="modal-title fw-bold"><i class="bi bi-car-front-fill me-2"></i>Registrar Unidad</h5>

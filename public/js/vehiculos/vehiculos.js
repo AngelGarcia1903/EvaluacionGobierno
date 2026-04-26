@@ -2,24 +2,45 @@
 $(document).ready(function () {
     // 1. Inicialización de Tabla Dinámica (Parte 3, Punto 17)
     const table = $("#tablaDinamicaVehiculos").DataTable({
-        ajax: "/vehiculos/data", // Ruta que devuelve JSON
+        ajax: "/vehiculos/data",
+        scrollX: true, // Scroll horizontal
+        scrollY: "250px", // Scroll vertical (aprox 5 registros)
+        scrollCollapse: true,
+        pageLength: 10,
+        autoWidth: false,
+        dom: '<"d-flex justify-content-between align-items-center mb-3"Bf>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
         columns: [
             {
-                data: null,
+                data: null, // Columna de Acciones
+                orderable: false,
+                searchable: false,
                 render: function (data) {
-                    /* botones editar/borrar */
+                    return `
+                <div class="text-center action-buttons">
+                    <button class="btn btn-sm btn-outline-primary border-0" onclick="editarVehiculo(${data.id})">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger border-0" onclick="eliminarVehiculo(${data.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
                 },
             },
-            { data: "vin" },
-            { data: "license_plate" },
+            {
+                data: "vin",
+                render: (data) =>
+                    `<code class="text-primary fw-bold">${data}</code>`,
+            },
+            {
+                data: "license_plate",
+                render: (data) => `<span class="badge bg-dark">${data}</span>`,
+            },
             { data: "brand" },
             { data: "model" },
             { data: "year_model" },
-            // Esta columna asume que tu controlador envía el nombre del dueño en la respuesta JSON
             {
                 data: "duenos",
                 render: function (data) {
-                    // Buscamos en el array de dueños el que tenga is_current en el pivot
                     if (data && data.length > 0) {
                         const actual = data.find(
                             (d) => d.pivot.is_current == 1,
@@ -33,31 +54,33 @@ $(document).ready(function () {
             },
         ],
         language: {
-            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
         },
-        dom: "Bfrtip",
         buttons: [
             {
-                extend: "excelHtml5", // Deseable Exportar a Excel [cite: 20, 27]
-                text: '<i class="bi bi-file-earmark-excel me-2"></i>Excel',
-                className: "btn btn-success btn-sm border-0 mb-3",
-                exportOptions: { columns: [0, 1, 2, 3] },
+                extend: "excelHtml5",
+                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                className: "btn btn-success btn-sm mb-3",
+                exportOptions: { columns: [1, 2, 3, 4, 5, 6] },
             },
         ],
-        responsive: true, // Responsivo (Parte 3, Punto 16) [cite: 10, 16]
     });
 
     // 2. Lógica para cargar propietarios al abrir el modal (AJAX/JSON)
+    // 2. Lógica para cargar propietarios al abrir el modal (AJAX/JSON)
     $("#modalVehiculo").on("show.bs.modal", function () {
-        $.get("/duenos/data", function (res) {
-            let options =
-                '<option value="">Seleccionar propietario...</option>';
-            res.data.forEach((dueno) => {
-                // Ajusta 'nombre_completo' según lo que envíe tu DuenoController
-                options += `<option value="${dueno.id}">${dueno.nombre_completo || dueno.full_name}</option>`;
+        // SOLUCIÓN: Solo hacemos esta petición si es un vehículo NUEVO
+        // (es decir, si el formulario no tiene el atributo data-edit-id)
+        if (!$("#formNuevoVehiculo").attr("data-edit-id")) {
+            $.get("/duenos/data", function (res) {
+                let options =
+                    '<option value="">Seleccionar propietario...</option>';
+                res.data.forEach((dueno) => {
+                    options += `<option value="${dueno.id}">${dueno.full_name}</option>`;
+                });
+                $("#selectDueno").html(options);
             });
-            $("#selectDueno").html(options);
-        });
+        }
     });
 
     // 3. Envío del formulario por AJAX (Requisito Parte 3)
@@ -143,20 +166,74 @@ function eliminarVehiculo(id) {
 
 // Función para editar (Cargar datos en el modal)
 function editarVehiculo(id) {
-    $.get(`/vehiculos/${id}/edit`, function (data) {
-        const modal = new bootstrap.Modal(
-            document.getElementById("modalVehiculo"),
-        );
-        modal.show();
+    // 1. Primero cargamos los propietarios para asegurar que el select tenga opciones
+    $.get("/duenos/data", function (res) {
+        let options = '<option value="">Seleccionar propietario...</option>';
+        res.data.forEach((dueno) => {
+            options += `<option value="${dueno.id}">${dueno.full_name}</option>`;
+        });
+        $("#selectDueno").html(options);
 
-        $("#vin").val(data.vin);
-        $("#license_plate").val(data.license_plate);
-        $("#brand").val(data.brand);
-        $("#model").val(data.model);
-        $("#year_model").val(data.year_model);
-        $("#selectDueno").val(data.owner_id); // Asumiendo que el modelo tiene owner_id o lo sacas del dueno_actual
+        // 2. Una vez llenos los dueños, pedimos los datos del vehículo
+        $.get(`/vehiculos/${id}/edit`, function (data) {
+            $("#vin").val(data.vin);
+            $("#license_plate").val(data.license_plate);
+            $("#brand").val(data.brand);
+            $("#model").val(data.model);
+            $("#year_model").val(data.year_model);
 
-        $("#modalVehiculoLabel").text("Editar Vehículo");
-        $("#formNuevoVehiculo").attr("data-edit-id", id);
+            // 3. Seleccionar el dueño actual (Soporta booleanos 'true' y números '1')
+            if (data.duenos && data.duenos.length > 0) {
+                const actual = data.duenos.find(
+                    (d) =>
+                        d.pivot.is_current == 1 || d.pivot.is_current === true,
+                );
+                if (actual) {
+                    $("#selectDueno").val(actual.id);
+                } else {
+                    // Fallback: Si no hay dueño "actual" marcado, pone el último de la lista
+                    $("#selectDueno").val(
+                        data.duenos[data.duenos.length - 1].id,
+                    );
+                }
+            }
+
+            // 4. Cambiamos el título del modal y el texto del botón
+            $("#modalVehiculo .modal-title").html(
+                '<i class="bi bi-pencil-square me-2"></i>Editar Vehículo',
+            );
+            $("#formNuevoVehiculo").attr("data-edit-id", id);
+            $("#formNuevoVehiculo button[type='submit']")
+                .text("ACTUALIZAR UNIDAD")
+                .removeClass("btn-dark")
+                .addClass("btn-primary");
+
+            // 5. Mostrar el modal con opciones de bloqueo
+            const modal = new bootstrap.Modal(
+                document.getElementById("modalVehiculo"),
+                {
+                    backdrop: "static",
+                    keyboard: false,
+                },
+            );
+            modal.show();
+        });
     });
 }
+
+$("#modalVehiculo").on("hidden.bs.modal", function () {
+    $("#formNuevoVehiculo")[0].reset();
+    $("#formNuevoVehiculo").removeAttr("data-edit-id");
+
+    // Regresar el título y el botón a su estado original
+    $("#modalVehiculo .modal-title").html(
+        '<i class="bi bi-car-front-fill me-2"></i>Registrar Unidad',
+    );
+    $("#formNuevoVehiculo button[type='submit']")
+        .text("GUARDAR UNIDAD")
+        .removeClass("btn-primary")
+        .addClass("btn-dark");
+
+    $("body").removeClass("modal-open").css("padding-right", "");
+    $(".modal-backdrop").remove();
+});
