@@ -42,7 +42,7 @@ $(document).ready(function () {
         buttons: [
             {
                 extend: "excelHtml5",
-                text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
+                text: '<i class="bi bi-file-earmark-excel"></i>Exportar a Excel',
                 className: "btn btn-success btn-sm border-0 mb-3",
                 exportOptions: { columns: [1, 2, 3, 4] },
             },

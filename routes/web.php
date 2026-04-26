@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{AuthController, VehiculoController, DuenoController, ReporteController, DashboardController, ConsultaController, SoapController};
-
 // --- Rutas Públicas ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -33,5 +32,5 @@ Route::middleware(['check.session'])->group(function () {
 
 // --- Webservice SOAP (Sin CSRF y fuera de sesión) ---
 // Usa PreventRequestForgery que es el nombre moderno en Laravel 11
-Route::post('/soap-server', [SoapController::class, 'handle'])
+Route::post('/api/soap-server', [SoapController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);

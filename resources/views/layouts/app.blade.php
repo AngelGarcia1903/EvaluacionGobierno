@@ -34,5 +34,27 @@
 
     @stack('scripts')
 
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 p-4 pb-0 text-dark">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-box-arrow-right text-danger me-2 fs-4"></i> Cerrar Sesión
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4 pt-3">
+                    <p class="text-muted fs-6 mb-0">¿Estás seguro que deseas cerrar tu sesión en el sistema de Seguimiento Vehicular?</p>
+                </div>
+
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light fw-bold text-muted px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancelar</button>
+                    <a href="{{ route('logout') }}" class="btn btn-danger fw-bold px-4" style="border-radius: 10px; background-color: #ef4444;">Sí, cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

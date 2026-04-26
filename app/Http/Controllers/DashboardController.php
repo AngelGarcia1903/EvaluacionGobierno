@@ -5,45 +5,47 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Dueno;
 use App\Models\Vehiculo;
-use App\Models\ReporteRobo; // Importación explícita para evitar el \App\Models\
+use App\Models\ReporteRobo;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Muestra el panel principal con estadísticas en tiempo real.
-     * Cumple con la Parte 3: Generar clases y métodos correspondientes.
-     */
     public function index()
     {
-        // Obtención de conteos básicos mediante Eloquent (POO)
         $totalDuenos = Dueno::count();
         $totalVehiculos = Vehiculo::count();
-        $totalReportes = ReporteRobo::count();
+        $totalReportes = ReporteRobo::where('status', 'ACTIVO')->count();
 
-        // Lógica de Negocio: Índice de robo actual
-        $porcentajeRobos = $totalVehiculos > 0
-            ? round(($totalReportes / $totalVehiculos) * 100, 1)
-            : 0;
-
-        // Lógica de Gestión: Avance respecto a meta mensual (Ejemplo: 100 unidades)
+        // KPIs de Lógica de Negocio
+        $porcentajeRobos = $totalVehiculos > 0 ? round(($totalReportes / $totalVehiculos) * 100, 1) : 0;
         $metaMensual = 100;
-        $porcentajeMeta = $totalVehiculos > 0
-            ? round(($totalVehiculos / $metaMensual) * 100, 1)
-            : 0;
+        $porcentajeMeta = $totalVehiculos > 0 ? round(($totalVehiculos / $metaMensual) * 100, 1) : 0;
+        $promedioPorDueno = $totalDuenos > 0 ? round(($totalVehiculos / $totalDuenos), 1) : 0;
 
-        // Promedio de vehículos por cada dueño registrado
-        $promedioPorDueno = $totalDuenos > 0
-            ? round(($totalVehiculos / $totalDuenos), 2)
-            : 0;
+        // --- DATOS PARA LAS GRÁFICAS ---
 
-        // Retornamos la vista dashboard (asegúrate que la ruta en views sea dashboard.index o dashboard)
+        // 1. Vehículos por Marca
+        $vehiculosPorMarca = Vehiculo::select('brand', DB::raw('count(*) as total'))
+            ->groupBy('brand')
+            ->pluck('total', 'brand')
+            ->toArray();
+
+        // 2. Estatus de la Flota (Sanos vs Robados)
+        $vehiculosSanos = $totalVehiculos - $totalReportes;
+        $estatusFlota = [
+            'Sin Reporte' => $vehiculosSanos,
+            'Con Reporte' => $totalReportes
+        ];
+
         return view('dashboard.index', compact(
             'totalDuenos',
             'totalVehiculos',
             'totalReportes',
             'porcentajeRobos',
             'porcentajeMeta',
-            'promedioPorDueno'
+            'promedioPorDueno',
+            'vehiculosPorMarca',
+            'estatusFlota'
         ));
     }
 }

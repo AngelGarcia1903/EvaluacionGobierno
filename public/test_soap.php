@@ -1,7 +1,13 @@
 <?php
 // Script rápido de prueba
-$url = "http://tu-dominio.local/api/soap-server"; // Cambia por tu URL local
-$params = ['termino' => 'ABC-123']; // Una placa que exista en tu DB
+
+// 1. CAMBIA ESTO por la URL exacta con la que entras a tu proyecto en el navegador.
+// Por ejemplo, si usas la URL de Laragon:
+$url = "http://evaluacionfinal.test/api/soap-server";
+// O si usas php artisan serve: $url = "http://localhost:8000/api/soap-server";
+
+// 2. Pon una placa que SÍ EXISTA en tu base de datos (Ej: la de la captura que me mandaste)
+$params = ['termino' => 'GTO-3498'];
 
 try {
     $cliente = new SoapClient(null, [
@@ -11,7 +17,8 @@ try {
     ]);
 
     $resultado = $cliente->obtenerHistorialVehiculo($params['termino']);
-    echo "<h2>Resultado SOAP:</h2><pre>" . $resultado . "</pre>";
+    // Cambiamos a print_r para imprimir el objeto completo
+    echo "<h2>Resultado SOAP de Plataforma Irapuato:</h2><pre>" . print_r($resultado, true) . "</pre>";
 } catch (SoapFault $e) {
     echo "Error SOAP: " . $e->getMessage();
 }
