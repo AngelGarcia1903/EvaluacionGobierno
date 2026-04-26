@@ -3,7 +3,7 @@ $(document).ready(function () {
     const table = $("#tablaDuenos").DataTable({
         ajax: "/duenos/data",
         scrollX: true,
-        scrollY: "250px",
+        scrollY: "350px", // Aumentamos un poco para aprovechar el ancho completo
         scrollCollapse: true,
         pageLength: 10,
         autoWidth: false,
@@ -47,7 +47,7 @@ $(document).ready(function () {
             {
                 extend: "excelHtml5",
                 text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-                className: "btn btn-success btn-sm mb-3",
+                className: "btn btn-success btn-sm mb-3 border-0",
                 exportOptions: { columns: [1, 2, 3, 4, 5, 6] },
             },
         ],
@@ -57,15 +57,21 @@ $(document).ready(function () {
     $("#curp_rfc").on("input", function () {
         this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
         const len = this.value.length;
-        $(this).removeClass("is-invalid-custom is-valid-custom");
-        if (len === 13 || len === 18) $(this).addClass("is-valid-custom");
-        else if (len > 0) $(this).addClass("is-invalid-custom");
+        $(this).removeClass("is-invalid is-valid"); // Uso clases estándar de bootstrap
+        if (len === 13 || len === 18) $(this).addClass("is-valid");
+        else if (len > 0) $(this).addClass("is-invalid");
     });
 
-    $("#phone, #num_ext, #num_int").on("input", function () {
+    // Teléfono: ESTRICTAMENTE solo números
+    $("#phone").on("input", function () {
         this.value = this.value.replace(/[^0-9]/g, "");
     });
 
+    // Números Exterior e Interior: Letras, números, guiones y espacios
+    $("#num_ext, #num_int").on("input", function () {
+        // La expresión regular permite mayúsculas, minúsculas, números, guiones (-) y espacios
+        this.value = this.value.replace(/[^A-Za-z0-9\-\s]/g, "").toUpperCase();
+    });
     // 3. Lógica del Checkbox (Habilitar/Deshabilitar Num Interior)
     $("#checkInterior").on("change", function () {
         const isChecked = $(this).is(":checked");
@@ -79,7 +85,7 @@ $(document).ready(function () {
         }
     });
 
-    // 4. Manejo del formulario (Guardar / Actualizar)
+    // 4. Manejo del formulario (Guardar / Actualizar) en el Modal
     $("#formDueno").on("submit", function (e) {
         e.preventDefault();
         const curpLen = $("#curp_rfc").val().length;
@@ -90,12 +96,12 @@ $(document).ready(function () {
                 "Debe tener 13 o 18 caracteres.",
                 "error",
             );
-            $("#curp_rfc").addClass("is-invalid-custom").focus();
+            $("#curp_rfc").addClass("is-invalid").focus();
             return false;
         }
 
         const editId = $(this).attr("data-edit-id");
-        const $btn = $(this).find('button[type="submit"]');
+        const $btn = $("#btnSubmitDueno"); // ID del botón en el modal
         const url = editId ? `/duenos/${editId}` : "/duenos";
         const method = editId ? "PUT" : "POST";
 
@@ -108,42 +114,66 @@ $(document).ready(function () {
             method: method,
             data: $(this).serialize() + (editId ? "&_method=PUT" : ""),
             success: function (res) {
+                // Cerrar modal y recargar
+                bootstrap.Modal.getInstance(
+                    document.getElementById("modalDueno"),
+                ).hide();
+                table.ajax.reload(null, false);
+
                 Swal.fire(
                     "¡Éxito!",
                     editId ? "Registro actualizado" : "Propietario registrado",
                     "success",
                 );
-                $("#btnCancelarEdicion").click(); // Usamos el click del cancelar para limpiar todo
-                table.ajax.reload(null, false);
             },
             error: function () {
                 Swal.fire(
                     "Error",
-                    "No se pudo procesar la solicitud.",
+                    "No se pudo procesar la solicitud o el CURP ya existe.",
                     "error",
                 );
             },
             complete: function () {
-                $btn.prop("disabled", false);
+                $btn.prop("disabled", false).html(
+                    editId ? "ACTUALIZAR PROPIETARIO" : "GUARDAR PROPIETARIO",
+                );
             },
         });
     });
 
-    // 5. Botón Cancelar
-    $("#btnCancelarEdicion").on("click", function () {
+    // 5. Limpieza al cerrar el modal (Reemplaza al antiguo btnCancelarEdicion)
+    $("#modalDueno").on("hidden.bs.modal", function () {
         $("#formDueno")[0].reset();
         $("#formDueno").removeAttr("data-edit-id");
-        $("#curp_rfc").removeClass("is-invalid-custom is-valid-custom");
-        $(".btn-dueno-submit")
-            .html('<i class="bi bi-person-plus-fill me-2"></i>GUARDAR')
+        $("#curp_rfc").removeClass("is-invalid is-valid");
+        $("#checkInterior").prop("checked", false).trigger("change");
+
+        // Restaurar estado de Creación
+        $("#tituloModalDueno").html(
+            '<i class="bi bi-person-plus-fill me-2"></i>Registrar Propietario',
+        );
+        $("#btnSubmitDueno")
+            .html("GUARDAR PROPIETARIO")
             .removeClass("btn-primary")
             .addClass("btn-dark");
-        $("#checkInterior").prop("checked", false).trigger("change");
-        $(this).hide();
+
+        $("body").removeClass("modal-open").css("padding-right", "");
+        $(".modal-backdrop").remove();
     });
 });
 
-// FUNCIONES GLOBALES
+// --- FUNCIONES GLOBALES ---
+
+// Función para abrir el modal limpio (NUEVO PROPIETARIO)
+function abrirModalNuevo() {
+    const modal = new bootstrap.Modal(document.getElementById("modalDueno"), {
+        backdrop: "static",
+        keyboard: false,
+    });
+    modal.show();
+}
+
+// Función para eliminar
 function eliminarDueno(id) {
     Swal.fire({
         title: "¿Estás seguro?",
@@ -167,28 +197,42 @@ function eliminarDueno(id) {
     });
 }
 
+// Función para editar (Abre modal y carga datos)
 function editarDueno(id) {
     $.get(`/duenos/${id}/edit`, function (data) {
-        $("input[name='full_name']").val(data.full_name);
-        $("input[name='curp_rfc']").val(data.curp_rfc).trigger("input");
-        $("input[name='phone']").val(data.phone);
-        $("input[name='calle']").val(data.calle);
-        $("input[name='colonia']").val(data.colonia);
-        $("input[name='num_ext']").val(data.num_ext);
+        // Cargar inputs
+        $("#full_name").val(data.full_name);
+        $("#curp_rfc").val(data.curp_rfc).trigger("input");
+        $("#phone").val(data.phone);
+        $("#calle").val(data.calle);
+        $("#colonia").val(data.colonia);
+        $("#num_ext").val(data.num_ext);
 
         if (data.num_int) {
             $("#checkInterior").prop("checked", true).trigger("change");
-            $("input[name='num_int']").val(data.num_int);
+            $("#num_int").val(data.num_int);
         } else {
             $("#checkInterior").prop("checked", false).trigger("change");
         }
 
+        // Cambiar estado a Edición
         $("#formDueno").attr("data-edit-id", id);
-        $(".btn-dueno-submit")
-            .html('<i class="bi bi-arrow-clockwise me-2"></i>ACTUALIZAR')
+        $("#tituloModalDueno").html(
+            '<i class="bi bi-pencil-square me-2"></i>Editar Propietario',
+        );
+        $("#btnSubmitDueno")
+            .html("ACTUALIZAR PROPIETARIO")
             .removeClass("btn-dark")
             .addClass("btn-primary");
-        $("#btnCancelarEdicion").show();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // Mostrar Modal
+        const modal = new bootstrap.Modal(
+            document.getElementById("modalDueno"),
+            {
+                backdrop: "static",
+                keyboard: false,
+            },
+        );
+        modal.show();
     });
 }

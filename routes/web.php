@@ -21,12 +21,14 @@ Route::middleware(['check.session'])->group(function () {
     Route::post('/duenos', [DuenoController::class, 'store'])->name('duenos.store');
     Route::resource('duenos', DuenoController::class);
 
+    // 1. Ruta para alimentar el DataTable (GET)
     Route::get('/reportes/data', [ReporteController::class, 'getReportesData'])->name('reportes.data');
+    // 2. Resource (Automáticamente habilita POST /reportes para el método store)
     Route::resource('reportes', ReporteController::class);
 
     // Consultas (Parte 4)
     Route::get('/consultar', [ConsultaController::class, 'index'])->name('consulta.index');
-    Route::post('/consultar/buscar', [ConsultaController::class, 'buscar'])->name('consulta.buscar');
+    Route::post('/consultas/buscar', [ConsultaController::class, 'buscar'])->name('consulta.buscar');
 });
 
 // --- Webservice SOAP (Sin CSRF y fuera de sesión) ---

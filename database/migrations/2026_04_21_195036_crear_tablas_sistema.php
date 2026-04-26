@@ -53,11 +53,11 @@ return new class extends Migration
         Schema::create('theft_reports', function ($table) {
             $table->id();
             $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
-            $table->string('report_number')->unique()->nullable();
+            $table->string('report_number')->unique(); // Folio del reporte
             $table->text('description');
-            $table->dateTime('report_date');
-            $table->enum('status', ['active', 'recovered'])->default('active');
-            $table->timestamps();
+            $table->date('report_date');
+            $table->string('status', 20)->default('ACTIVO');
+            // Sin $table->timestamps();
         });
     }
     /**

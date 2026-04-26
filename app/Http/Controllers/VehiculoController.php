@@ -80,23 +80,31 @@ class VehiculoController extends Controller
         $vehiculo = Vehiculo::findOrFail($id);
         $vehiculo->update($request->all());
 
-        // Actualizar dueño actualizando la tabla pivote
-        // 1. Quitar el estado de "actual" a todos los dueños de este vehículo
-        DB::table('vehicle_ownership')
+        // 1. Buscamos quién es el dueño actual en este momento
+        $duenoActual = DB::table('vehicle_ownership')
             ->where('vehicle_id', $id)
-            ->update(['is_current' => false]);
+            ->where('is_current', true)
+            ->first();
 
-        // 2. Insertar el nuevo registro de dueño actual (sin timestamps)
-        DB::table('vehicle_ownership')->insert([
-            'vehicle_id'       => $id,
-            'owner_id'         => $request->owner_id,
-            'is_current'       => true,
-            'acquisition_date' => date('Y-m-d')
-        ]);
+        // 2. SOLO si no hay dueño, o si el dueño enviado es DIFERENTE al actual, hacemos el cambio
+        if (!$duenoActual || $duenoActual->owner_id != $request->owner_id) {
+
+            // Quitamos el estatus al anterior
+            DB::table('vehicle_ownership')
+                ->where('vehicle_id', $id)
+                ->update(['is_current' => false]);
+
+            // Registramos al nuevo dueño
+            DB::table('vehicle_ownership')->insert([
+                'vehicle_id'       => $id,
+                'owner_id'         => $request->owner_id,
+                'is_current'       => true,
+                'acquisition_date' => date('Y-m-d')
+            ]);
+        }
 
         return response()->json(['success' => true]);
     }
-
     /**
      * Módulo de Consulta (Parte 4).
      * Busca por placa o VIN y regresa historial completo. [cite: 2]

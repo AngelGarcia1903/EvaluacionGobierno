@@ -1,7 +1,6 @@
 <div class="sidebar d-flex flex-column">
         <div class="sidebar-brand">
-            <span class="fw-bold"><i class="bi bi-car-front-fill me-2"></i>VehicleTrack</span>
-            <div class="text-muted small fw-normal mt-1" style="font-size: 0.7rem;">Sistema de Seguimiento</div>
+            <span class="fw-bold"><i class="bi bi-car-front-fill me-2"></i>Seguimiento Vehicular</span>
         </div>
 
         <ul class="nav nav-pills flex-column mb-auto mt-2">

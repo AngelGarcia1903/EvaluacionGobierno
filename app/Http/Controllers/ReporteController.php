@@ -26,20 +26,23 @@ class ReporteController extends Controller
     {
         try {
             $request->validate([
-                'vehiculo_id' => 'required|exists:vehicles,id', // Valida constraint [cite: 5]
+                'vehiculo_id' => 'required|exists:vehicles,id',
                 'fecha_reporte' => 'required|date',
                 'descripcion' => 'required|string'
             ]);
 
-            // Uso de métodos de clase (POO) [cite: 15]
+            // Generamos un número de reporte único (Ej: REP-202405-1234)
+            $folio = 'REP-' . date('Ym') . '-' . rand(1000, 9999);
+
             ReporteRobo::create([
-                'vehicle_id'  => $request->vehiculo_id,
-                'report_date' => $request->fecha_reporte,
-                'description' => $request->descripcion,
-                'status'      => 'ACTIVO' // Clave para la lógica de la Parte 4 [cite: 21]
+                'vehicle_id'    => $request->vehiculo_id,
+                'report_number' => $folio, // Agregamos el campo faltante
+                'report_date'   => $request->fecha_reporte,
+                'description'   => $request->descripcion,
+                'status'        => 'ACTIVO'
             ]);
 
-            return response()->json(['success' => 'El reporte ha sido registrado en la base de datos.']);
+            return response()->json(['success' => 'El reporte ha sido registrado con el folio: ' . $folio]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al procesar: ' . $e->getMessage()], 500);
         }
@@ -51,17 +54,46 @@ class ReporteController extends Controller
      */
     public function getReportesData()
     {
-        // POO: Usamos relaciones de Eloquent para evitar JOINS manuales pesados
-        // Esto demuestra una base de datos normalizada [cite: 6]
         $reportes = ReporteRobo::with('vehiculo')->get()->map(function ($item) {
             return [
-                'license_plate' => $item->vehiculo->license_plate,
-                'model'         => $item->vehiculo->model,
+                'id'            => $item->id, // ESTO ES VITAL PARA LOS BOTONES
+                'license_plate' => $item->vehiculo->license_plate ?? 'N/A',
+                'model'         => $item->vehiculo->model ?? 'N/A',
                 'report_date'   => $item->report_date,
                 'description'   => $item->description
             ];
         });
 
         return response()->json(['data' => $reportes]);
+    }
+
+    // Funciones nuevas para Editar, Actualizar y Eliminar:
+    public function edit($id)
+    {
+        return response()->json(ReporteRobo::findOrFail($id));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'vehiculo_id' => 'required|exists:vehicles,id',
+            'fecha_reporte' => 'required|date',
+            'descripcion' => 'required|string'
+        ]);
+
+        $reporte = ReporteRobo::findOrFail($id);
+        $reporte->update([
+            'vehicle_id'  => $request->vehiculo_id,
+            'report_date' => $request->fecha_reporte,
+            'description' => $request->descripcion
+        ]);
+
+        return response()->json(['success' => 'Reporte actualizado exitosamente.']);
+    }
+
+    public function destroy($id)
+    {
+        ReporteRobo::destroy($id);
+        return response()->json(['success' => true]);
     }
 }

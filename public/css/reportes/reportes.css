@@ -54,3 +54,33 @@
     margin-bottom: 8px;
     display: block;
 }
+/* --- Estilos Generales y Tabla --- */
+.text-title-dark {
+    color: #0f172a;
+}
+
+.btn-danger-custom {
+    border-radius: 12px;
+}
+
+.card-table-custom {
+    border-radius: 15px;
+}
+
+.col-acciones {
+    min-width: 100px;
+}
+
+/* --- Estilos del Modal --- */
+.modal-content-custom {
+    border-radius: 20px;
+}
+
+.modal-header-danger {
+    background: linear-gradient(135deg, #dc3545, #991b1b);
+}
+
+/* --- Estilos de Inputs --- */
+.input-radius-custom {
+    border-radius: 10px;
+}
